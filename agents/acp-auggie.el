@@ -27,74 +27,66 @@
 
 (eval-when-compile
   (require 'cl-lib))
+
+(require 'map)
+(require 'subr-x)
 (require 'shell-maker nil t)
 
+;; External declarations
 (declare-function acp--indent-string "acp")
 (declare-function acp-make-agent-config "acp")
-(autoload 'acp-make-agent-config "acp")
 (declare-function acp--make-acp-client "acp")
 (declare-function acp-start "acp")
+
+(autoload 'acp-make-agent-config "acp")
+
+;; ------------------------------------------------------------------
+;; Authentication
+;; ------------------------------------------------------------------
 
 (cl-defun acp-make-auggie-authentication (&key login none)
   "Create Auggie authentication configuration.
 
-LOGIN when non-nil indicates to use login-based authentication.
-NONE when non-nil disables authentication (for local usage).
-
-Only one of LOGIN or NONE should be provided, never both."
-  (when (and login none)
-    (error "Cannot specify both :login and :none - choose one"))
-  (unless (or login none)
-    (error "Must specify either :login or :none"))
+LOGIN enables login auth.
+NONE disables authentication (local/dev use)."
   (cond
-   (login `((:login . t)))
-   (none `((:none . t)))))
+   ((and login none)
+    (error "Cannot use both :login and :none"))
+   (login '(:login t))
+   (none '(:none t))
+   (t
+    (error "Must specify either :login or :none"))))
 
 (defcustom acp-auggie-authentication
   (acp-make-auggie-authentication :login t)
-  "Configuration for Auggie authentication.
-For login-based authentication (default):
-
-  (setq acp-auggie-authentication
-        (acp-make-auggie-authentication :login t))
-
-For no authentication (when using alternative authentication methods):
-
-  (setq acp-auggie-authentication
-        (acp-make-auggie-authentication :none t))"
+  "Auggie authentication configuration."
   :type '(choice
-          (const :tag "Login authentication" ((:login . t)))
-          (const :tag "No authentication" ((:none . t))))
+          (const :tag "Login authentication" (:login t))
+          (const :tag "No authentication" (:none t)))
   :group 'acp)
+
+;; ------------------------------------------------------------------
+;; Command + Environment
+;; ------------------------------------------------------------------
+
 (defcustom acp-auggie-acp-command
   '("auggie" "--acp")
-  "Command and parameters for the Auggie client.
-
-The first element is the command name, and the rest are command parameters."
-  :type '(cons (string :tag "Command")
-               (repeat :tag "Arguments" string))
+  "Command used to start Auggie ACP client."
+  :type '(cons string (repeat string))
   :group 'acp)
 
 (defcustom acp-auggie-environment
   nil
-  "Environment variables for the Auggie client.
-
-This should be a list of environment variables to be used when
-starting the Auggie client process.
-
-Example usage to set custom environment variables:
-
-  (setq acp-auggie-environment
-        (acp-make-environment-variables
-         \"MY_VAR\" \"some-value\"
-         \"MY_OTHER_VAR\" \"another-value\"))\"
+  "Environment variables for Auggie process."
   :type '(repeat string)
   :group 'acp)
 
-(defun acp-auggie-make-agent-config ()
-  "Create an Auggie agent configuration.
+;; ------------------------------------------------------------------
+;; Agent Config
+;; ------------------------------------------------------------------
 
-Returns an agent configuration alist using `acp-make-agent-config'."
+(defun acp-auggie-make-agent-config ()
+  "Return Auggie agent configuration."
   (acp-make-agent-config
    :identifier 'auggie
    :mode-line-name "Auggie"
@@ -102,56 +94,72 @@ Returns an agent configuration alist using `acp-make-agent-config'."
    :shell-prompt "Auggie> "
    :shell-prompt-regexp "Auggie> "
    :welcome-function #'acp-auggie--welcome-message
-   :client-maker (lambda (buffer)
-                   (acp-auggie-make-client :buffer buffer))
-   :install-instructions "See https://docs.augmentcode.com/cli/overview for installation."))
+   :client-maker #'acp-auggie-make-client
+   :install-instructions
+   "https://docs.augmentcode.com/cli/overview"))
 
 (defun acp-auggie-start-agent ()
-  "Start an interactive Auggie agent shell."
+  "Start Auggie agent."
   (interactive)
-  (acp-start
-   :config (acp-auggie-make-agent-config)))
+  (acp-start :config (acp-auggie-make-agent-config)))
+
+;; ------------------------------------------------------------------
+;; Client
+;; ------------------------------------------------------------------
 
 (cl-defun acp-auggie-make-client (&key buffer)
-  "Create an Auggie client using configured authentication with BUFFER as context.
-
-Uses `acp-auggie-authentication' for authentication configuration."
+  "Create Auggie client using BUFFER."
   (unless buffer
     (error "Missing required argument: :buffer"))
-  (when (and (boundp 'acp-auggie-command) acp-auggie-command)
-    (user-error "Please migrate to use acp-auggie-acp-command and eval (setq acp-auggie-command nil)"))
-  (acp--make-acp-client :command (car acp-auggie-acp-command)
-                                :command-params (cdr acp-auggie-acp-command)
-                                :environment-variables (cond ((map-elt acp-auggie-authentication :none)
-                                                              acp-auggie-environment)
-                                                             ((map-elt acp-auggie-authentication :login)
-                                                              acp-auggie-environment)
-                                                             (t
-                                                              (error "Invalid Auggie authentication configuration")))
-                                :context-buffer buffer))
+
+  ;; Migration guard
+  (when (and (boundp 'acp-auggie-command)
+             acp-auggie-command)
+    (user-error "Deprecated: use acp-auggie-acp-command instead"))
+
+  (let ((auth acp-auggie-authentication))
+    (acp--make-acp-client
+     :command (car acp-auggie-acp-command)
+     :command-params (cdr acp-auggie-acp-command)
+     :environment-variables
+     (cond
+      ((plist-get auth :none)
+       acp-auggie-environment)
+      ((plist-get auth :login)
+       acp-auggie-environment)
+      (t
+       (error "Invalid authentication config")))
+     :context-buffer buffer)))
+
+;; ------------------------------------------------------------------
+;; UI / Welcome
+;; ------------------------------------------------------------------
 
 (defun acp-auggie--welcome-message (config)
-  "Return Auggie welcome message using `shell-maker' CONFIG."
+  "Return welcome message."
   (let ((art (acp--indent-string 4 (acp-auggie--ascii-art)))
-        (message (string-trim-left (shell-maker-welcome-message config) "\n")))
-    (concat "\n\n"
-            art
-            "\n\n"
-            message)))
+        (msg (string-trim-left
+              (shell-maker-welcome-message config)
+              "\n")))
+    (concat "\n\n" art "\n\n" msg)))
 
 (defun acp-auggie--ascii-art ()
-  "Auggie ASCII art."
-  (let* ((is-dark (eq (frame-parameter nil 'background-mode) 'dark))
-         (text (string-trim "
+  "Return Auggie ASCII art."
+  (let* ((dark (eq (frame-parameter nil 'background-mode) 'dark))
+         (text
+          (string-trim
+           "
  █████╗ ██╗   ██╗ ██████╗  ██████╗ ██╗███████╗
 ██╔══██╗██║   ██║██╔════╝ ██╔════╝ ██║██╔════╝
 ███████║██║   ██║██║  ███╗██║  ███╗██║█████╗
 ██╔══██║██║   ██║██║   ██║██║   ██║██║██╔══╝
 ██║  ██║╚██████╔╝╚██████╔╝╚██████╔╝██║███████╗
-╚═╝  ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝╚══════╝" "\n")))
-    (propertize text 'font-lock-face (if is-dark
-                                         '(:foreground "#3D855E")
-                                       '(:foreground "#2D6B4A")))))
+╚═╝  ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝╚══════╝
+"))
+         (color (if dark "#3D855E" "#2D6B4A")))
+    (propertize text 'face `(:foreground ,color))))
+
+;; ------------------------------------------------------------------
 
 (provide 'acp-auggie)
 
