@@ -85,9 +85,9 @@ starting the Auggie client process.
 Example usage to set custom environment variables:
 
   (setq acp-auggie-environment
-        (`acp-make-environment-variables'
+        (acp-make-environment-variables
          \"MY_VAR\" \"some-value\"
-         \"MY_OTHER_VAR\" \"another-value\"))"
+         \"MY_OTHER_VAR\" \"another-value\"))\"
   :type '(repeat string)
   :group 'acp)
 
