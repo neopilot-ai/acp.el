@@ -1113,21 +1113,22 @@ and END from the buffer."
                             text)
     text))
 
-(defvar-keymap acp-mode-map
-  :parent shell-maker-mode-map
-  :doc "Keymap for `acp-mode'."
-  "TAB" #'acp-next-item
-  "<backtab>" #'acp-previous-item
-  "n" #'acp-next-item
-  "p" #'acp-previous-item
-  "C-<tab>" #'acp-cycle-session-mode
-  "C-c C-c" #'acp-interrupt
-  "C-c C-m" #'acp-set-session-mode
-  "C-c C-v" #'acp-set-session-model
-  "C-c C-o" #'acp-other-buffer
-  "<remap> <yank>" #'acp-yank-dwim)
+(when (featurep 'shell-maker)
+  (defvar-keymap acp-mode-map
+    :parent shell-maker-mode-map
+    :doc "Keymap for `acp-mode'."
+    "TAB" #'acp-next-item
+    "<backtab>" #'acp-previous-item
+    "n" #'acp-next-item
+    "p" #'acp-previous-item
+    "C-<tab>" #'acp-cycle-session-mode
+    "C-c C-c" #'acp-interrupt
+    "C-c C-m" #'acp-set-session-mode
+    "C-c C-v" #'acp-set-session-model
+    "C-c C-o" #'acp-other-buffer
+    "<remap> <yank>" #'acp-yank-dwim)
 
-(shell-maker-define-major-mode (acp--make-shell-maker-config) acp-mode-map)
+  (shell-maker-define-major-mode (acp--make-shell-maker-config) acp-mode-map))
 
 (cl-defun acp--handle (&key command shell-buffer)
   "Handle SHELL-BUFFER COMMAND (and lazy initialize the ACP stack).
