@@ -118,19 +118,25 @@ The user is prompted to confirm or edit the worktree path before creation."
   (let* ((worktrees-dir (acp--dot-subdir "worktrees"))
          (worktree-name (acp-worktree--generate-name))
          (default-path (file-name-concat worktrees-dir worktree-name))
-         (worktree-path (expand-file-name (read-directory-name
-                                           "Worktree directory: "
-                                           default-path))))
+         (worktree-path (directory-file-name
+                         (expand-file-name
+                          (read-directory-name
+                           "Worktree directory: "
+                           default-path)))))
     (when (file-exists-p worktree-path)
       (user-error "Directory already exists: %s" worktree-path))
     (make-directory (file-name-directory worktree-path) t)
-    ;; Create the worktree
-    (let ((output (shell-command-to-string
-                   (format "git worktree add %s 2>&1"
-                           (shell-quote-argument worktree-path)))))
-      (unless (file-exists-p worktree-path)
-        (user-error "Failed to create worktree: %s" output))
+    ;; Create the worktree and validate command success explicitly.
+    (let* ((git-output "")
+           (exit-code
+            (with-temp-buffer
+              (let ((status (process-file "git" nil t nil "worktree" "add" worktree-path)))
+                (setq git-output (string-trim (buffer-string)))
+                status))))
+      (unless (zerop exit-code)
+        (user-error "Failed to create worktree: %s" git-output))
       (let ((default-directory worktree-path))
+        (acp '(4)))))
         (acp '(4))))))
 
 (provide 'acp-worktree)
