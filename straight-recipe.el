@@ -6,6 +6,7 @@
                :files (:defaults "agents/*.el" "ui/*.el" "features/*.el")))
 
 ;; For local development, use this instead:
+;; (add-to-list 'load-path "~/path/to/acp.el")
 ;; (add-to-list 'load-path "~/path/to/acp.el/agents")
 ;; (add-to-list 'load-path "~/path/to/acp.el/ui")
 ;; (add-to-list 'load-path "~/path/to/acp.el/features")
