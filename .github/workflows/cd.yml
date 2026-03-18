@@ -19,7 +19,7 @@ jobs:
           cp -r ui package/
           cp -r features package/
           cp -r tests package/
-          cp README.org LICENSE package/
+          cp README.md LICENSE package/
           cd package && tar -czvf ../acp-pkg.tar.gz .
 
       - name: Upload artifact
