@@ -21,6 +21,39 @@ A native Emacs shell to interact with LLM agents powered by ACP ([[https://agent
 
 With acp, you can chat with the likes of Gemini CLI, Claude Agent, Auggie, Mistral Vibe, or any other ACP-driven agent.
 
+Watch on [[https://www.youtube.com/watch?v=R2Ucr3amgGg][YouTube]]
+
+[[https://www.youtube.com/watch?v=R2Ucr3amgGg][file:yt.png]]
+
+* News
+
+- [[https://github.com/neopilot-ai/acp-0-47-1-updates][acp 0.47 updates]].
+- [[https://github.com/neopilot-ai/acp-0-25-updates][acp 0.25 updates]].
+- [[https://github.com/neopilot-ai/acp-016-improvements-melpa][acp 0.17 improvements + MELPA]].
+- [[https://github.com/neopilot-ai/acp-0-5-improvements][acp 0.5 improvements]].
+- [[https://github.com/neopilot-ai/introducing-acp][Introducing Emacs acp (powered by ACP)]].
+- [[https://github.com/neopilot-ai/introducing-acpel][Introducing acp.el]].
+
+* Related projects
+
+=acp= relies on [[https://github.com/neopilot-ai/acp.el][acp.el]] to communicate with agents via ACP ([[https://agentclientprotocol.com/][Agent Client Protocol]]).
+
+We now have a handful of additional packages to extend the =acp= experience:
+
+- [[https://github.com/nineluj/agent-review][agent-review]]: Code review interface for =acp=.
+- [[https://github.com/ultronozm/acp-attention.el][acp-attention.el]]: Mode-line attention tracker for =acp=.
+- [[https://github.com/jethrokuan/acp-manager][acp-manager]]: Tabulated view and management of =acp= buffers.
+- [[https://github.com/cmacrae/acp-sidebar][acp-sidebar]]: A sidebar add-on for =acp=.
+- [[https://github.com/gveres/acp-workspace][acp-workspace]]: Dedicated tab-bar workspace for managing multiple =acp= sessions.
+- [[https://github.com/ElleNajt/acp-to-go][acp-to-go]]: Interact with =acp= sessions from your mobile or any other device via Slack.
+- [[https://github.com/ElleNajt/meta-acp][meta-acp]]: Multi-agent coordination system for =acp= with inter-agent communication, task tracking, and project-level dispatching.
+- [[https://github.com/neopilot-ai/acp.el-knockknock][acp-knockknock]]: Notifications for =acp= via [[https://github.com/konrad1977/knockknock][knockknock.el]].
+- [[https://github.com/neopilot-aiemacs-skills][emacs-skills]]: Claude Agent skills for Emacs.
+
+* Icons
+
+Thanks to [[https://github.com/lobehub/lobe-icons][Lobe Icons]] for the lovely icons.
+
 * Setup
 
 ** External dependencies
@@ -784,6 +817,16 @@ For example, here's what a [[https://agentclientprotocol.com/protocol/schema#ses
 Sometimes including a traffic screenshot in an issue is enough. Other times including the full traffic is needed. From the traffic viewer, you can =M-x acp-traffic-save-to= to save as =.traffic=.
 
 ** Where should I file bug or feature request?
+
+*** Agent issues or feature requests
+
+If you're able to determine the agent is missing a feature (or a bug is present) in their [[https://agentclientprotocol.com][Agent Client Protocol]] implementation, please file an issue directly with the agent folks. For example:
+
+- [[https://github.com/zed-industries/claude-code-acp][claude-code-acp]]: For Claude Agent.
+- [[https://github.com/zed-industries/codex-acp][codex-acp]]: For Codex.
+- [[https://github.com/google-gemini/gemini-cli][Gemini CLI]].
+- [[https://block.github.io/goose/docs/getting-started/installation][Goose]].
+- [[https://github.com/QwenLM/qwen-code][Qwen Code]].
 
 *** =acp= issues or feature requests
 
