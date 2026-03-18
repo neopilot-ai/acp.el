@@ -108,9 +108,7 @@ Checks if any token counts or context size are non-zero."
       (> (or (map-elt usage :context-size) 0) 0)))
 
 (defun acp-show-usage ()
-  "Display current session usage information in the minibuffer.
-This is a stub UI function for testing usage tracking before implementing
-a more polished presentation method."
+  "Display current session usage information in the minibuffer."
   (interactive)
   (unless (derived-mode-p 'acp-mode)
     (error "Not in an acp buffer"))
