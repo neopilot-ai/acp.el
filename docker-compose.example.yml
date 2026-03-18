@@ -1,0 +1,57 @@
+# acp.el Docker Compose Example
+#
+# Usage:
+#   1. Copy this file to docker-compose.yml in your project
+#   2. Customize the image and configuration
+#   3. Add to your Emacs config:
+#
+#      (require 'acp-docker)
+#      (setq acp-docker-compose-file "docker-compose.yml")
+#      (setq acp-docker-service "claude-agent")
+#
+#   4. Start the container:
+#      M-x acp-docker-start-container
+#
+# See: https://github.com/neopilot-ai/acp.el
+
+services:
+  claude-agent:
+    image: ghcr.io/zed-industries/claude-agent:latest
+    container_name: acp-claude
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ~/.config/claude:/home/user/.config/claude:ro
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    stdin_open: true
+    tty: true
+    profiles:
+      - agent
+
+  gemini-agent:
+    image: google/gemini-cli:latest
+    container_name: acp-gemini
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    stdin_open: true
+    tty: true
+    profiles:
+      - agent
+
+  goose-agent:
+    image: ghcr.io/block/github/goose-agent:latest
+    container_name: acp-goose
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ~/.config/goose:/home/user/.config/goose:ro
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    stdin_open: true
+    tty: true
+    profiles:
+      - agent

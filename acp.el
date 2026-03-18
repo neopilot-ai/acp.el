@@ -53,6 +53,7 @@
 (require 'acp-completion "features/acp-completion")
 (require 'acp-cursor "agents/acp-cursor")
 (require 'acp-devcontainer "features/acp-devcontainer")
+(require 'acp-docker "features/acp-docker")
 (require 'acp-diff "ui/acp-diff")
 (require 'acp-droid "agents/acp-droid")
 (require 'acp-github "features/acp-github")

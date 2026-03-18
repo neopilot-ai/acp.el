@@ -1,0 +1,44 @@
+# acp.el Dockerfile Example
+#
+# Build:
+#   docker build -t acp-agent:latest .
+#
+# Usage:
+#   1. Add to your Emacs config:
+#
+#      (require 'acp-docker)
+#      (setq acp-docker-enabled t)
+#      (setq acp-docker-image "acp-agent:latest")
+#
+#   2. Start agent:
+#      M-x acp-docker-start-container
+#
+# See: https://github.com/neopilot-ai/acp.el
+
+FROM ubuntu:24.04
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    vim \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js (for some agents)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+# Install Claude Agent (example)
+RUN npm install -g @anthropic-ai/claude-code
+
+# Set working directory
+WORKDIR /workspace
+
+# Default environment
+ENV SHELL=/bin/bash
+ENV EDITOR=vim
+
+# Start interactive shell
+CMD ["/bin/bash"]
