@@ -1,8 +1,8 @@
-;;; sui.el --- Interactive shell UI elements -*- lexical-binding: t; -*-
+;;; acp-sui.el --- Interactive shell UI elements -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 NeoPilot AI
 
-;; Author: NeoPilot AI https://neopilot-ai.com
+;; Author: NeoPilot AI https://github.com/neopilot-ai
 ;; URL: https://github.com/neopilot-ai/acp.el
 
 ;;; Commentary:
@@ -21,16 +21,16 @@
 (require 'cl-lib)
 (require 'cursor-sensor)
 
-(cl-defun sui-make-dialog-block-model (&key (namespace-id "global") (block-id "1") label-left label-right body)
+(cl-defun acp-acp-sui-make-dialog-block-model (&key (namespace-id "global") (block-id "1") label-left label-right body)
   "Create a dialog block model alist.
 NAMESPACE-ID, BLOCK-ID, LABEL-LEFT, LABEL-RIGHT, and BODY are the keys."
   (list (cons :namespace-id namespace-id)
         (cons :block-id block-id)
-        (cons :label-left (sui--string-or-nil label-left))
-        (cons :label-right (sui--string-or-nil label-right))
-        (cons :body (sui--string-or-nil body))))
+        (cons :label-left (acp-sui--string-or-nil label-left))
+        (cons :label-right (acp-sui--string-or-nil label-right))
+        (cons :body (acp-sui--string-or-nil body))))
 
-(cl-defun sui-update-dialog-block (model &key append create-new on-post-process no-navigation expanded)
+(cl-defun acp-sui-update-dialog-block (model &key append create-new on-post-process no-navigation expanded)
   "Update or add a dialog block using MODEL.
 
 When APPEND is non-nil, append to body instead of replacing.
@@ -54,15 +54,15 @@ For existing blocks, the current expansion state is preserved unless explicitly 
           (goto-char (prop-match-beginning match)))
         (if (and match (not create-new))
             ;; Found existing block - update it
-            (let* ((existing-model (sui--read-dialog-block-at-point))
+            (let* ((existing-model (acp-sui--read-dialog-block-at-point))
                    (existing-body (map-elt existing-model :body))
                    (indicator-overlay (seq-find (lambda (ov)
-                                                  (overlay-get ov 'sui-indicator))
+                                                  (overlay-get ov 'acp-sui-indicator))
                                                 (overlays-in (prop-match-beginning match)
                                                              (prop-match-end match))))
                    (has-collapsed indicator-overlay)
                    (collapsed (and indicator-overlay
-                                   (overlay-get indicator-overlay 'sui-collapsed)))
+                                   (overlay-get indicator-overlay 'acp-sui-collapsed)))
                    (block-start (prop-match-beginning match))
                    (block-end (prop-match-end match))
                    (final-body (if new-body
@@ -81,7 +81,7 @@ For existing blocks, the current expansion state is preserved unless explicitly 
               ;; Delete and regenerate, preserving collapsed state
               (delete-region block-start block-end)
               (goto-char block-start)
-              (sui--insert-dialog-block final-model block-id
+              (acp-sui--insert-dialog-block final-model block-id
                                         (if has-collapsed
                                             (not collapsed)  ; preserve existing state
                                           expanded)        ; use default for new blocks
@@ -89,19 +89,19 @@ For existing blocks, the current expansion state is preserved unless explicitly 
 
           ;; Not found or create-new - insert new block
           (goto-char (point-max))
-          (insert (sui--required-newlines 2))
+          (insert (acp-sui--required-newlines 2))
           (let ((insert-model (delq nil
                                     (list (cons :namespace-id namespace-id)
                                           (cons :block-id (map-elt model :block-id))
                                           (when new-label-left (cons :label-left new-label-left))
                                           (when new-label-right (cons :label-right new-label-right))
                                           (when new-body (cons :body new-body))))))
-            (sui--insert-dialog-block insert-model block-id expanded no-navigation)
+            (acp-sui--insert-dialog-block insert-model block-id expanded no-navigation)
             (insert "\n\n"))))
       (when on-post-process
         (funcall on-post-process)))))
 
-(defun sui--read-dialog-block (block-start block-end block-id)
+(defun acp-sui--read-dialog-block (block-start block-end block-id)
   "Read dialog block between BLOCK-START and BLOCK-END with BLOCK-ID into a model."
   (let ((namespace-id nil)
         (id nil)
@@ -120,10 +120,10 @@ For existing blocks, the current expansion state is preserved unless explicitly 
     ;; Find relevant overlays
     (let ((overlays (overlays-at block-start)))
       (dolist (ov overlays)
-        (when (overlay-get ov 'sui-indicator)
+        (when (overlay-get ov 'acp-sui-indicator)
           (setq indicator-overlay ov)
-          (setq collapsed (overlay-get ov 'sui-collapsed))
-          (setq body-overlay (overlay-get ov 'sui-body-overlay)))))
+          (setq collapsed (overlay-get ov 'acp-sui-collapsed))
+          (setq body-overlay (overlay-get ov 'acp-sui-body-overlay)))))
 
     (save-excursion
       (goto-char block-start)
@@ -156,18 +156,18 @@ For existing blocks, the current expansion state is preserved unless explicitly 
                 (when indicator-overlay (cons :indicator-overlay indicator-overlay))
                 (when body-overlay (cons :body-overlay body-overlay))))))
 
-(defun sui--read-dialog-block-at-point ()
+(defun acp-sui--read-dialog-block-at-point ()
   "Read dialog block at point, returning model or nil if none found."
   (let ((block-id (get-text-property (point) 'block-id)))
     (when block-id
       (let ((block-start (previous-single-property-change (point) 'block-id nil (point-min)))
             (block-end (next-single-property-change (point) 'block-id nil (point-max))))
-        (sui--read-dialog-block block-start block-end block-id)))))
+        (acp-sui--read-dialog-block block-start block-end block-id)))))
 
-(defun sui--insert-dialog-block (model block-id &optional expanded no-navigation)
+(defun acp-sui--insert-dialog-block (model block-id &optional expanded no-navigation)
   "Insert dialog block from MODEL with BLOCK-ID text properties.
 EXPANDED determines initial state (default nil for collapsed).
-NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
+NO-NAVIGATION omits acp-sui-navigatable property to exclude from navigation."
   (require 'map)
   (let ((block-start (point))
         (label-left (map-elt model :label-left))
@@ -181,22 +181,22 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
     ;; Insert collapse indicator if body exists
     (when (and body (or label-left label-right))
       (let ((indicator-start (point)))
-        (insert (sui-add-action-to-text
+        (insert (acp-sui-add-action-to-text
                  "> "
                  (lambda ()
                    (interactive)
-                   (sui-toggle-dialog-block-at-point))
+                   (acp-sui-toggle-dialog-block-at-point))
                  (lambda ()
                    (message "Press RET to toggle"))))
         (setq indicator-overlay (make-overlay indicator-start (point)))
-        (overlay-put indicator-overlay 'sui-indicator t)
-        (overlay-put indicator-overlay 'sui-block-id block-id)
-        (overlay-put indicator-overlay 'sui-collapsed (not expanded))
+        (overlay-put indicator-overlay 'acp-sui-indicator t)
+        (overlay-put indicator-overlay 'acp-sui-block-id block-id)
+        (overlay-put indicator-overlay 'acp-sui-collapsed (not expanded))
         (overlay-put indicator-overlay 'evaporate t)
-        (overlay-put indicator-overlay 'keymap (sui-make-action-keymap
+        (overlay-put indicator-overlay 'keymap (acp-sui-make-action-keymap
                                                 (lambda ()
                                                   (interactive)
-                                                  (sui-toggle-dialog-block-at-point))))
+                                                  (acp-sui-toggle-dialog-block-at-point))))
         (overlay-put indicator-overlay 'display (if expanded "▼ " "▶ "))
         (put-text-property indicator-start (point) 'block-id block-id)
         (put-text-property indicator-start (point) 'read-only t)
@@ -204,11 +204,11 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
 
     (when label-left
       (let ((start (point)))
-        (insert (sui-add-action-to-text
+        (insert (acp-sui-add-action-to-text
                  label-left
                  (lambda ()
                    (interactive)
-                   (sui-toggle-dialog-block-at-point))
+                   (acp-sui-toggle-dialog-block-at-point))
                  (lambda ()
                    (message "Press RET to toggle"))))
         (put-text-property start (point) 'dialog-section 'label-left)
@@ -221,11 +221,11 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
     (when label-right
       (when need-space (insert " "))
       (let ((start (point)))
-        (insert (sui-add-action-to-text
+        (insert (acp-sui-add-action-to-text
                  label-right
                  (lambda ()
                    (interactive)
-                   (sui-toggle-dialog-block-at-point))
+                   (acp-sui-toggle-dialog-block-at-point))
                  (lambda ()
                    (message "Press RET to toggle"))))
         (put-text-property start (point) 'dialog-section 'label-right)
@@ -262,7 +262,7 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
                 (setq end (+ end 2))))  ; Adjust end position for inserted spaces
             (forward-line 1)))
 
-        ;; Add sui-specific properties
+        ;; Add acp-sui-specific properties
         (put-text-property start (point) 'dialog-section 'body)
         (put-text-property start (point) 'block-id block-id)
         (put-text-property start (point) 'help-echo block-id)
@@ -275,15 +275,15 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
           (overlay-put body-overlay 'evaporate t)
           (unless expanded
             (overlay-put body-overlay 'invisible t))
-          (overlay-put indicator-overlay 'sui-body-overlay body-overlay))))
+          (overlay-put indicator-overlay 'acp-sui-body-overlay body-overlay))))
 
     (put-text-property block-start (point) 'block-id block-id)
     (unless no-navigation
-      (put-text-property block-start (point) 'sui-navigatable t))
+      (put-text-property block-start (point) 'acp-sui-navigatable t))
     (put-text-property block-start (point) 'read-only t)
     (put-text-property block-start (point) 'front-sticky '(read-only))))
 
-(defun sui--required-newlines (desired)
+(defun acp-sui--required-newlines (desired)
   "Return string of newlines needed to reach DESIRED (max 2) before point."
   (let ((desired (min 2 desired)))
     (make-string
@@ -293,7 +293,7 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
       (t desired))
      ?\n)))
 
-(defun sui-toggle-dialog-block-at-point ()
+(defun acp-sui-toggle-dialog-block-at-point ()
   "Toggle visibility of dialog block body at point."
   (interactive)
   (let ((block-id (get-text-property (point) 'block-id))
@@ -303,25 +303,25 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
       (let ((block-start (previous-single-property-change (point) 'block-id nil (point-min))))
         ;; Look for indicator overlay at block start
         (dolist (ov (overlays-at block-start))
-          (when (overlay-get ov 'sui-indicator)
+          (when (overlay-get ov 'acp-sui-indicator)
             (setq indicator-overlay ov)))
         (when indicator-overlay
-          (let ((body-overlay (overlay-get indicator-overlay 'sui-body-overlay))
-                (collapsed (overlay-get indicator-overlay 'sui-collapsed)))
+          (let ((body-overlay (overlay-get indicator-overlay 'acp-sui-body-overlay))
+                (collapsed (overlay-get indicator-overlay 'acp-sui-collapsed)))
             (when body-overlay
               (if collapsed
                   ;; Expand: show body and change indicator to down arrow
                   (progn
                     (overlay-put body-overlay 'invisible nil)
                     (overlay-put indicator-overlay 'display "▼ ")
-                    (overlay-put indicator-overlay 'sui-collapsed nil))
+                    (overlay-put indicator-overlay 'acp-sui-collapsed nil))
                 ;; Collapse: hide body and change indicator to right arrow
                 (progn
                   (overlay-put body-overlay 'invisible t)
                   (overlay-put indicator-overlay 'display "▶ ")
-                  (overlay-put indicator-overlay 'sui-collapsed t))))))))))
+                  (overlay-put indicator-overlay 'acp-sui-collapsed t))))))))))
 
-(defun sui-toggle-all-dialog-blocks ()
+(defun acp-sui-toggle-all-dialog-blocks ()
   "Toggle all dialog blocks based on the state of the last block.
 If the last block is collapsed, expand all.  Otherwise, collapse all."
   (interactive)
@@ -329,62 +329,62 @@ If the last block is collapsed, expand all.  Otherwise, collapse all."
   (let ((any-collapsed nil)
         (any-expanded nil))
     (dolist (ov (overlays-in (point-min) (point-max)))
-      (when (overlay-get ov 'sui-indicator)
-        (if (overlay-get ov 'sui-collapsed)
+      (when (overlay-get ov 'acp-sui-indicator)
+        (if (overlay-get ov 'acp-sui-collapsed)
             (setq any-collapsed t)
           (setq any-expanded t))))
 
     ;; If any are collapsed, expand all. Otherwise collapse all.
     (cond
-     (any-collapsed (sui-expand-all-dialog-blocks))
-     (any-expanded (sui-collapse-all-dialog-blocks))
+     (any-collapsed (acp-sui-expand-all-dialog-blocks))
+     (any-expanded (acp-sui-collapse-all-dialog-blocks))
      (t (message "No collapsible found")))))
 
-(defun sui-expand-all-dialog-blocks ()
+(defun acp-sui-expand-all-dialog-blocks ()
   "Expand all dialog blocks in buffer."
   (interactive)
   (let ((count 0))
     (dolist (ov (overlays-in (point-min) (point-max)))
-      (when (overlay-get ov 'sui-indicator)
-        (let ((body-overlay (overlay-get ov 'sui-body-overlay)))
+      (when (overlay-get ov 'acp-sui-indicator)
+        (let ((body-overlay (overlay-get ov 'acp-sui-body-overlay)))
           (when body-overlay
-            (when (overlay-get ov 'sui-collapsed)
+            (when (overlay-get ov 'acp-sui-collapsed)
               (overlay-put body-overlay 'invisible nil)
               (overlay-put ov 'display "▼ ")
-              (overlay-put ov 'sui-collapsed nil)
+              (overlay-put ov 'acp-sui-collapsed nil)
               (setq count (1+ count)))))))))
 
-(defun sui-collapse-all-dialog-blocks ()
+(defun acp-sui-collapse-all-dialog-blocks ()
   "Collapse all dialog blocks in buffer."
   (interactive)
   (let ((count 0))
     (dolist (ov (overlays-in (point-min) (point-max)))
-      (when (overlay-get ov 'sui-indicator)
-        (let ((body-overlay (overlay-get ov 'sui-body-overlay)))
+      (when (overlay-get ov 'acp-sui-indicator)
+        (let ((body-overlay (overlay-get ov 'acp-sui-body-overlay)))
           (when body-overlay
-            (unless (overlay-get ov 'sui-collapsed)
+            (unless (overlay-get ov 'acp-sui-collapsed)
               (overlay-put body-overlay 'invisible t)
               (overlay-put ov 'display "▶ ")
-              (overlay-put ov 'sui-collapsed t)
+              (overlay-put ov 'acp-sui-collapsed t)
               (setq count (1+ count)))))))))
 
-(defun sui-collapse-dialog-block-by-id (namespace-id block-id)
+(defun acp-sui-collapse-dialog-block-by-id (namespace-id block-id)
   "Collapse dialog block with NAMESPACE-ID and BLOCK-ID."
   (let ((full-block-id (format "%s-%s" namespace-id block-id)))
     (dolist (ov (overlays-in (point-min) (point-max)))
-      (when (and (overlay-get ov 'sui-indicator)
-                 (string= (overlay-get ov 'sui-block-id) full-block-id))
-        (let ((body-overlay (overlay-get ov 'sui-body-overlay)))
-          (when (and body-overlay (not (overlay-get ov 'sui-collapsed)))
+      (when (and (overlay-get ov 'acp-sui-indicator)
+                 (string= (overlay-get ov 'acp-sui-block-id) full-block-id))
+        (let ((body-overlay (overlay-get ov 'acp-sui-body-overlay)))
+          (when (and body-overlay (not (overlay-get ov 'acp-sui-collapsed)))
             (overlay-put body-overlay 'invisible t)
             (overlay-put ov 'display "▶ ")
-            (overlay-put ov 'sui-collapsed t)))))))
+            (overlay-put ov 'acp-sui-collapsed t)))))))
 
-(defun sui--string-or-nil (str)
+(defun acp-sui--string-or-nil (str)
   "Return STR if it is not nil and not empty, otherwise nil."
   (and str (not (string-empty-p str)) str))
 
-(defun sui--indent-text (text &optional indent-string)
+(defun acp-sui--indent-text (text &optional indent-string)
   "Indent TEXT by adding INDENT-STRING to the beginning of each non-empty line.
 INDENT-STRING defaults to two spaces."
   (when text
@@ -396,10 +396,10 @@ INDENT-STRING defaults to two spaces."
                  (split-string text "\n")
                  "\n"))))
 
-(defun sui-forward-block ()
+(defun acp-sui-forward-block ()
   "Jump to the next block."
   (interactive)
-  (let ((current-block (and (get-text-property (point) 'sui-navigatable)
+  (let ((current-block (and (get-text-property (point) 'acp-sui-navigatable)
                             (get-text-property (point) 'block-id)))
         (start-point (point)))
     ;; If we're in a navigatable block, move past it first
@@ -408,7 +408,7 @@ INDENT-STRING defaults to two spaces."
         (when match
           (goto-char (prop-match-end match)))))
     ;; Now find the next navigatable block
-    (let ((next (text-property-search-forward 'sui-navigatable)))
+    (let ((next (text-property-search-forward 'acp-sui-navigatable)))
       (if next
           (progn
             (goto-char (prop-match-beginning next))
@@ -434,10 +434,10 @@ INDENT-STRING defaults to two spaces."
         (goto-char start-point)
         (message "No more blocks")))))
 
-(defun sui-backward-block ()
+(defun acp-sui-backward-block ()
   "Jump to the previous block."
   (interactive)
-  (let ((current-block (and (get-text-property (point) 'sui-navigatable)
+  (let ((current-block (and (get-text-property (point) 'acp-sui-navigatable)
                             (get-text-property (point) 'block-id)))
         (start-point (point)))
     ;; If we're in a navigatable block, move to its beginning first
@@ -449,7 +449,7 @@ INDENT-STRING defaults to two spaces."
     (when (> (point) (point-min))
       (backward-char))
     ;; Now find the previous navigatable block
-    (let ((prev (text-property-search-backward 'sui-navigatable)))
+    (let ((prev (text-property-search-backward 'acp-sui-navigatable)))
       (if prev
           (progn
             (goto-char (prop-match-beginning prev))
@@ -474,7 +474,7 @@ INDENT-STRING defaults to two spaces."
         (goto-char start-point)
         (message "No previous blocks")))))
 
-(defun sui-make-action-keymap (action)
+(defun acp-sui-make-action-keymap (action)
   "Create keymap with ACTION."
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-1] action)
@@ -482,11 +482,11 @@ INDENT-STRING defaults to two spaces."
     (define-key map [remap self-insert-command] 'ignore)
     map))
 
-(defun sui-add-action-to-text (text action &optional on-entered)
+(defun acp-sui-add-action-to-text (text action &optional on-entered)
   "Add ACTION lambda to propertized TEXT and return modified text.
 ON-ENTERED is a function to call when the cursor enters the text."
   (add-text-properties 0 (length text)
-                       `(keymap ,(sui-make-action-keymap action))
+                       `(keymap ,(acp-sui-make-action-keymap action))
                        text)
   (when on-entered
     (add-text-properties 0 (length text)
@@ -497,24 +497,24 @@ ON-ENTERED is a function to call when the cursor enters the text."
                          text))
   text)
 
-(defvar sui-mode-map
+(defvar acp-sui-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "TAB") #'sui-forward-block)
-    (define-key map (kbd "<tab>") #'sui-forward-block)
-    (define-key map (kbd "<backtab>") #'sui-backward-block)
-    (define-key map (kbd "S-TAB") #'sui-backward-block)
+    (define-key map (kbd "TAB") #'acp-sui-forward-block)
+    (define-key map (kbd "<tab>") #'acp-sui-forward-block)
+    (define-key map (kbd "<backtab>") #'acp-sui-backward-block)
+    (define-key map (kbd "S-TAB") #'acp-sui-backward-block)
     map)
-  "Keymap for `sui-mode'.")
+  "Keymap for `acp-sui-mode'.")
 
 ;;;###autoload
-(define-minor-mode sui-mode
+(define-minor-mode acp-sui-mode
   "Minor mode for SUI block navigation."
   :lighter " SUI"
-  :keymap sui-mode-map
-  (if sui-mode
+  :keymap acp-sui-mode-map
+  (if acp-sui-mode
       (cursor-sensor-mode 1)
     (cursor-sensor-mode -1)))
 
-(provide 'sui)
+(provide 'acp-sui)
 
-;;; sui.el ends here
+;;; acp-sui.el ends here

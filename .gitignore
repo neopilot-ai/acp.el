@@ -1,0 +1,6 @@
+/.acp/
+
+*.elc
+*.el.gz
+acp-pkg.tar.gz
+package/

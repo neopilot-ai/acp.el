@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package build
+        run: |
+          mkdir -p package
+          cp acp.el package/
+          cp -r agents package/
+          cp -r ui package/
+          cp -r features package/
+          cp -r tests package/
+          cp README.md LICENSE package/
+          cd package && tar -czvf ../acp-pkg.tar.gz .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acp-pkg
+          path: acp-pkg.tar.gz
+
+  melpa:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: acp-pkg
+
+      - name: Publish to MELPA
+        env:
+          API_TOKEN: ${{ secrets.MELPA_API_TOKEN }}
+        run: |
+          curl -X POST \
+            https://api.melpa.org/v1/builds \
+            -H "Authorization: Bearer $API_TOKEN" \
+            --data-binary @acp-pkg.tar.gz
