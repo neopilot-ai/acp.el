@@ -62,9 +62,10 @@ For no authentication (when using alternative authentication methods):
 
   (setq acp-auggie-authentication
         (acp-make-auggie-authentication :none t))"
-  :type 'alist
+  :type '(choice
+          (const :tag "Login authentication" ((:login . t)))
+          (const :tag "No authentication" ((:none . t))))
   :group 'acp)
-
 (defcustom acp-auggie-acp-command
   '("auggie" "--acp")
   "Command and parameters for the Auggie client.
