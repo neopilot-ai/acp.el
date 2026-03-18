@@ -71,7 +71,8 @@ For no authentication (when using alternative authentication methods):
   "Command and parameters for the Auggie client.
 
 The first element is the command name, and the rest are command parameters."
-  :type '(repeat string)
+  :type '(cons (string :tag "Command")
+               (repeat :tag "Arguments" string))
   :group 'acp)
 
 (defcustom acp-auggie-environment
