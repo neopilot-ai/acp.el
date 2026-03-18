@@ -226,7 +226,7 @@ CONTEXT-USED and CONTEXT-SIZE are token counts."
 CONTEXT-USED and CONTEXT-SIZE are token counts.
 Format: \"29k/200k (29%)\"."
   (let ((percentage (/ (* 100.0 context-used) context-size)))
-    (propertize (format "%s/%s (%.0f%%%%)"
+    (propertize (format "%s/%s (%.0f%%)"
                         (acp--format-number-compact context-used)
                         (acp--format-number-compact context-size)
                         percentage)
