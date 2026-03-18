@@ -13,6 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Emacs
+        run: |
+          # Install Emacs from apt
+          sudo apt-get update
+          sudo apt-get install -y emacs
+
       - name: Check Emacs version
         run: emacs --version
 
