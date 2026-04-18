@@ -114,7 +114,7 @@ For existing blocks, the current expansion state is preserved unless explicitly 
         (body-overlay nil))
 
     ;; Extract namespace-id from block-id if it contains a dash
-    (when (string-match "^\\(.+\\)-\\(.+\\)$" block-id)
+    (when (string-match "^\\([^-]+\\)-\\(.+\\)$" block-id)
       (setq namespace-id (match-string 1 block-id))
       (setq id (match-string 2 block-id)))
 
