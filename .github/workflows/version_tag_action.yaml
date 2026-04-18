@@ -1,0 +1,127 @@
+name: Version Tag
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      old_version: ${{ steps.version.outputs.old }}
+      new_version: ${{ steps.version.outputs.new }}
+      tag_created: ${{ steps.tag.outputs.created }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current version
+        id: version
+        run: |
+          # Extract version from acp.el
+          OLD_VERSION=$(grep -oP '(?<=defconst acp--version ")[^"]+' acp.el)
+          echo "old=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $OLD_VERSION"
+
+      - name: Bump version
+        id: bump
+        run: |
+          OLD="${{ steps.version.outputs.old }}"
+          
+          # Parse version parts
+          MAJOR=$(echo "$OLD" | cut -d. -f1)
+          MINOR=$(echo "$OLD" | cut -d. -f2)
+          PATCH=$(echo "$OLD" | cut -d. -f3)
+          
+          # Bump based on input
+          case "${{ github.event.inputs.bump }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Update version in file
+        run: |
+          sed -i 's/(defconst acp--version "[^"]*")/(defconst acp--version "${{ steps.bump.outputs.new }}")/' acp.el
+          cat acp.el | grep "defconst acp--version"
+
+      - name: Create tag
+        id: tag
+        run: |
+          TAG="${{ steps.bump.outputs.new }}"
+          
+          # Check if tag already exists
+          if git rev-parse "v$TAG" >/dev/null 2>&1; then
+            echo "Tag v$TAG already exists"
+            echo "created=false" >> $GITHUB_OUTPUT
+          else
+            # Create tag and push
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add acp.el
+            git commit -m "Bump version to $TAG"
+            git tag "v$TAG"
+            git push origin "v$TAG"
+            echo "created=true" >> $GITHUB_OUTPUT
+            echo "Created and pushed tag: v$TAG"
+          fi
+
+  release:
+    needs: version
+    if: needs.version.outputs.tag_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.version.outputs.new_version }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.version.outputs.new_version }}
+          release_name: acp.el v${{ needs.version.outputs.new_version }}
+          draft: false
+          prerelease: false
+          body: |
+            ## What's New in acp.el v${{ needs.version.outputs.new_version }}
+            
+            ### Changes
+            - Version bump from ${{ needs.version.outputs.old_version }} to ${{ needs.version.outputs.new_version }}
+            
+            ### Installation
+            ```elisp
+            (use-package acp :ensure t)
+            ```
+            
+            ### Upgrading
+            Update via your package manager or reinstall from MELPA.
+          generate_release_notes: true

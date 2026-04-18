@@ -1,0 +1,57 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if Pages is enabled
+        id: pages
+        run: |
+          if [ -d "docs" ]; then
+            echo "docs_folder=exists" >> $GITHUB_OUTPUT
+          else
+            echo "docs_folder=missing" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Pages
+        if: steps.pages.outputs.docs_folder == 'exists'
+        uses: actions/configure-pages@v4
+        continue-on-error: true
+
+      - name: Upload artifact
+        if: steps.pages.outputs.docs_folder == 'exists'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+        continue-on-error: true
+
+      - name: Deploy to GitHub Pages
+        if: steps.pages.outputs.docs_folder == 'exists'
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.pages.outputs.docs_folder }}" == "exists" ]; then
+            echo "✅ GitHub Pages deployment triggered"
+          else
+            echo "⚠️ No docs folder found - skipping Pages deployment"
+          fi
