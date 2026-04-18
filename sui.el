@@ -19,6 +19,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'seq)
 (require 'cursor-sensor)
 
 (cl-defun sui-make-dialog-block-model (&key (namespace-id "global") (block-id "1") label-left label-right body)
