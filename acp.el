@@ -834,7 +834,6 @@ by default."
             nil)))
         (t
          nil)))
-         nil)))
 
 (provide 'acp)
 
