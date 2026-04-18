@@ -819,7 +819,7 @@ by default."
          (condition-case _err
              (funcall acp-google-key)
            (error
-            "KEY-NOT-FOUND")))
+            nil)))
         (t
          nil)))
 
@@ -831,8 +831,9 @@ by default."
          (condition-case _err
              (funcall acp-anthropic-key)
            (error
-            "KEY-NOT-FOUND")))
+            nil)))
         (t
+         nil)))
          nil)))
 
 (provide 'acp)
