@@ -595,11 +595,16 @@ https://agentclientprotocol.com/protocol/schema#param-stop-reason"
            :text "Details" :help "Details" :kind 'error
            :action (lambda ()
                      (interactive)
-                     (acp--view-as-error
-                      (with-temp-buffer
-                        (insert raw-error)
-                        (json-pretty-print-buffer)
-                        (buffer-string)))))))
+                     (let ((payload (if (stringp raw-error)
+                                        raw-error
+                                      (prin1-to-string raw-error))))
+                       (acp--view-as-error
+                        (condition-case nil
+                            (with-temp-buffer
+                              (insert payload)
+                              (json-pretty-print-buffer)
+                              (buffer-string))
+                          (error payload)))))))
 
 (defun acp--view-as-error (text)
   "Display TEXT in a read-only error buffer."
