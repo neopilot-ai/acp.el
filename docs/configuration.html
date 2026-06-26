@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration — acp.el</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="logo"><span>acp</span>.el</a>
+    <ul>
+      <li><a href="installation.html">Installation</a></li>
+      <li><a href="configuration.html" class="active">Configuration</a></li>
+      <li><a href="agents.html">Agents</a></li>
+      <li><a href="features.html">Features</a></li>
+      <li><a href="contributing.html">Contributing</a></li>
+      <li><a href="https://github.com/neopilot-ai/acp.el">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Configuration</h1>
+    <p>Customize acp.el to fit your workflow.</p>
+  </div>
+
+  <h2>Basic Setup</h2>
+  <pre><code>(require 'acp)
+
+;; Set preferred agent (shown on M-x acp)
+(setq acp-preferred-agent-config
+      (acp-anthropic-make-claude-code-config))</code></pre>
+
+  <h2>Agent Authentication</h2>
+
+  <h3>Anthropic (Claude Code)</h3>
+  <pre><code>;; API key authentication
+(setq acp-anthropic-authentication
+      (acp-anthropic-make-authentication :api-key "sk-ant-..."))
+
+;; Browser-based login (recommended)
+(setq acp-anthropic-authentication
+      (acp-anthropic-make-authentication :login t))</code></pre>
+
+  <h3>Google (Gemini CLI)</h3>
+  <pre><code>;; Uses gcloud ADC — run once:
+;; gcloud auth application-default login
+(setq acp-google-authentication
+      (acp-google-make-authentication :login t))</code></pre>
+
+  <h3>OpenAI (Codex)</h3>
+  <pre><code>;; API key
+(setq acp-openai-authentication
+      (acp-openai-make-authentication :api-key "sk-..."))</code></pre>
+
+  <h3>Environment Variables</h3>
+  <p>Pass custom environment variables to agents:</p>
+  <pre><code>(setq acp-anthropic-claude-environment
+      (acp-make-environment-variables
+       "HTTPS_PROXY" "http://proxy.example.com:8080"
+       "HTTP_PROXY"  "http://proxy.example.com:8080"))
+
+;; Inherit the parent Emacs process environment
+(setq acp-anthropic-claude-environment
+      (acp-make-environment-variables :inherit-env t))
+
+;; Load from .env file
+(setq acp-anthropic-claude-environment
+      (acp-make-environment-variables :load-env "~/.env"))</code></pre>
+
+  <h2>MCP Servers</h2>
+  <p>Configure Model Context Protocol servers for extended tool access:</p>
+  <pre><code>(setq acp-mcp-servers
+  '(; Filesystem access — restrict to home directory
+    ((name . "filesystem")
+     (type . file-system)
+     (config . ((allowedDirectories . ["~/"]))))
+
+    ; HTTP-based MCP server
+    ((name . "notion")
+     (type . http)
+     (url . "https://mcp.notion.com/mcp"))
+
+    ; stdio-based server
+    ((name . "custom-tool")
+     (type . stdio)
+     (command . "my-mcp-server")
+     (args . ("--port" "3000")))))</code></pre>
+
+  <h2>Session Strategy</h2>
+  <p>Control how sessions are created and resumed:</p>
+  <pre><code>;; 'latest — resume the most recent session (default)
+;; 'new    — always create a new session
+;; 'list   — prompt to select from available sessions
+(setq acp-session-strategy 'latest)</code></pre>
+
+  <h2>Transcripts</h2>
+  <p>Sessions are automatically saved as Markdown transcripts:</p>
+  <pre><code>;; Default: <project>/.acp/transcripts/YYYY-MM-DD-HH-MM-SS.md
+;; Disable transcripts:
+(setq acp-transcript-file-path-function nil)
+
+;; Custom path function:
+(setq acp-transcript-file-path-function
+      (lambda () (expand-file-name
+                  (format-time-string "session-%s.md")
+                  "~/acp-transcripts/")))</code></pre>
+
+  <h2>Container Support</h2>
+  <p>Run agents inside Docker containers or devcontainers:</p>
+  <pre><code>;; Docker image
+(setq acp-docker-enabled t)
+(setq acp-docker-image "ubuntu:latest")
+(setq acp-docker-workdir "/workspace")
+
+;; Docker Compose
+(setq acp-docker-compose-file "docker-compose.yml")
+(setq acp-docker-service "agent")
+
+;; Devcontainer
+(setq acp-command-prefix '("devcontainer" "exec" "--workspace-folder" "."))
+(setq acp-path-resolver-function #'acp-devcontainer-resolve-path)</code></pre>
+
+  <h2>UI Customization</h2>
+
+  <h3>Context Usage Indicator</h3>
+  <pre><code>;; Show context window usage percentage in modeline
+(setq acp-show-context-usage-indicator 'detailed)  ;; "29k/200k (15%)"
+(setq acp-show-context-usage-indicator t)           ;; Bar: █▇▆▅▄▃▂▁
+(setq acp-show-context-usage-indicator nil)          ;; Hidden</code></pre>
+
+  <h3>Usage at Turn End</h3>
+  <pre><code>;; Display token usage summary after each agent response
+(setq acp-show-usage-at-turn-end t)</code></pre>
+
+  <h2>File Tree Browser</h2>
+  <pre><code>;; Side panel location
+(setq acp-file-tree-side 'left)   ;; or 'right
+
+;; Panel width
+(setq acp-file-tree-width 30)
+
+;; Ignored directories
+(setq acp-file-tree-ignored-directories
+      '(".git" "node_modules" "__pycache__" ".acp"))</code></pre>
+
+  <h2>Permission Manager</h2>
+  <pre><code>;; Default policy for unspecified actions
+(setq acp-permissions-default-policy 'prompt)  ;; or 'allow, 'deny
+
+;; File read policy (default: allow)
+(setq acp-permissions-file-read-policy 'allow)
+
+;; File write policy (default: prompt)
+(setq acp-permissions-file-write-policy 'prompt)
+
+;; Command execution policy (default: prompt)
+(setq acp-permissions-command-execution-policy 'prompt)
+
+;; Always-allowed paths
+(setq acp-permissions-allowed-paths '("~/projects/"))
+
+;; Always-denied paths (takes precedence)
+(setq acp-permissions-denied-paths '("/etc/" "/root/"))
+
+;; Enable audit logging
+(setq acp-permissions-audit-log t)</code></pre>
+
+  <h2>Full Customization Reference</h2>
+  <table>
+    <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>acp-preferred-agent-config</code></td><td><code>nil</code></td><td>Default agent config for <code>M-x acp</code></td></tr>
+    <tr><td><code>acp-session-strategy</code></td><td><code>'latest</code></td><td>How to handle session creation/resumption</td></tr>
+    <tr><td><code>acp-transcript-file-path-function</code></td><td>Auto</td><td>Function returning transcript file path</td></tr>
+    <tr><td><code>acp-mcp-servers</code></td><td><code>nil</code></td><td>List of MCP server configurations</td></tr>
+    <tr><td><code>acp-show-usage-at-turn-end</code></td><td><code>nil</code></td><td>Show token usage after each response</td></tr>
+    <tr><td><code>acp-show-context-usage-indicator</code></td><td><code>'detailed</code></td><td>Context window usage display mode</td></tr>
+    <tr><td><code>acp-docker-enabled</code></td><td><code>nil</code></td><td>Enable Docker container support</td></tr>
+    <tr><td><code>acp-docker-image</code></td><td><code>nil</code></td><td>Docker image for agent containers</td></tr>
+    <tr><td><code>acp-file-tree-side</code></td><td><code>'left</code></td><td>Side for file tree panel</td></tr>
+    <tr><td><code>acp-file-tree-width</code></td><td><code>30</code></td><td>Width of file tree panel</td></tr>
+    <tr><td><code>acp-permissions-default-policy</code></td><td><code>'prompt</code></td><td>Default permission policy</td></tr>
+    <tr><td><code>acp-permissions-audit-log</code></td><td><code>t</code></td><td>Enable permission audit logging</td></tr>
+    <tr><td><code>acp-session-store-directory</code></td><td><code>nil</code></td><td>Session storage directory</td></tr>
+    <tr><td><code>acp-session-store-max-sessions</code></td><td><code>50</code></td><td>Max sessions to keep on disk</td></tr>
+  </table>
+
+</div>
+
+<footer class="site-footer">
+  <p>Built with care by <a href="https://github.com/neopilot-ai">NeoPilot AI</a> and the Emacs community.</p>
+  <p><a href="https://github.com/neopilot-ai/acp.el/blob/main/LICENSE">GPL-3.0</a> · <a href="https://github.com/sponsors/neopilot-ai">Sponsor</a></p>
+</footer>
+
+</body>
+</html>
