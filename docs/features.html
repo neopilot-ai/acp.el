@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — acp.el</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="logo"><span>acp</span>.el</a>
+    <ul>
+      <li><a href="installation.html">Installation</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="agents.html">Agents</a></li>
+      <li><a href="features.html" class="active">Features</a></li>
+      <li><a href="contributing.html">Contributing</a></li>
+      <li><a href="https://github.com/neopilot-ai/acp.el">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Features</h1>
+    <p>Everything acp.el provides out of the box.</p>
+  </div>
+
+  <h2>Keybindings</h2>
+  <table>
+    <tr><th>Keys</th><th>Command</th><th>Description</th></tr>
+    <tr><td><kbd>C-c C-c</kbd></td><td><code>comint-interrupt-subjob</code></td><td>Interrupt the running agent</td></tr>
+    <tr><td><kbd>TAB</kbd></td><td><code>acp-next-item</code></td><td>Navigate to next UI element</td></tr>
+    <tr><td><kbd>S-TAB</kbd></td><td><code>acp-previous-item</code></td><td>Navigate to previous UI element</td></tr>
+    <tr><td><kbd>C-c C-v</kbd></td><td><code>acp-set-session-model</code></td><td>Change the model for current session</td></tr>
+    <tr><td><kbd>C-c C-o</kbd></td><td><code>acp-switch-buffer</code></td><td>Switch to another acp buffer</td></tr>
+    <tr><td><kbd>C-c C-m</kbd></td><td><code>acp-set-session-mode</code></td><td>Change the session mode</td></tr>
+    <tr><td><kbd>M-p</kbd></td><td><code>comint-previous-input</code></td><td>Previous command in history</td></tr>
+    <tr><td><kbd>M-n</kbd></td><td><code>comint-next-input</code></td><td>Next command in history</td></tr>
+    <tr><td><kbd>C-c C-l</kbd></td><td><code>comint-list-arguments</code></td><td>List arguments</td></tr>
+    <tr><td><kbd>C-c C-s</kbd></td><td><code>acp-copy-session-id</code></td><td>Copy current session ID</td></tr>
+  </table>
+
+  <h2>Interactive Commands</h2>
+  <table>
+    <tr><th>Command</th><th>Description</th></tr>
+    <tr><td><code>M-x acp</code></td><td>Start or resume an agent session</td></tr>
+    <tr><td><code>M-x acp-session-save</code></td><td>Save current session to disk</td></tr>
+    <tr><td><code>M-x acp-session-load</code></td><td>Load a previously saved session</td></tr>
+    <tr><td><code>M-x acp-session-list</code></td><td>Browse saved sessions</td></tr>
+    <tr><td><code>M-x acp-session-search</code></td><td>Search sessions by query</td></tr>
+    <tr><td><code>M-x acp-show-usage</code></td><td>Display token usage for current session</td></tr>
+    <tr><td><code>M-x acp-file-tree-open</code></td><td>Open the file tree side panel</td></tr>
+    <tr><td><code>M-x acp-file-tree-close</code></td><td>Close the file tree panel</td></tr>
+    <tr><td><code>M-x acp-new-worktree-shell</code></td><td>Create a new git worktree and start a session</td></tr>
+    <tr><td><code>M-x acp-docker-list-containers</code></td><td>List running acp Docker containers</td></tr>
+    <tr><td><code>M-x acp-docker-logs</code></td><td>Show container logs</td></tr>
+    <tr><td><code>M-x acp-permissions-view-audit-log</code></td><td>View permission audit log</td></tr>
+  </table>
+
+  <h2>Session Persistence</h2>
+  <p>Sessions can be saved to disk and restored across Emacs restarts.</p>
+  <pre><code>;; Save current session
+M-x acp-session-save
+
+;; Load a session (with completion)
+M-x acp-session-load
+
+;; List all saved sessions
+M-x acp-session-list
+
+;; Search sessions
+M-x acp-session-search RET debug RET
+
+;; Tag a session
+M-x acp-session-tag RET my-feature RET</code></pre>
+  <p>Sessions are stored in <code>&lt;project&gt;/.acp/sessions/</code> as Emacs Lisp or JSON files.</p>
+
+  <h2>File Tree Browser</h2>
+  <p>A side panel showing the project file tree with keyboard navigation.</p>
+
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><kbd>RET</kbd></td><td>Expand/collapse directory</td></tr>
+    <tr><td><kbd>SPC</kbd></td><td>Send file path to agent session</td></tr>
+    <tr><td><kbd>o</kbd></td><td>Open file in Emacs</td></tr>
+    <tr><td><kbd>g</kbd></td><td>Refresh tree</td></tr>
+    <tr><td><kbd>q</kbd></td><td>Close file tree panel</td></tr>
+  </table>
+
+  <h2>Permission Manager</h2>
+  <p>Fine-grained control over agent file access and command execution.</p>
+  <pre><code>;; Check permissions programmatically
+(acp-permissions-check-file-read "/path/to/file")
+(acp-permissions-check-file-write "/path/to/file")
+(acp-permissions-check-command "rm -rf /")
+
+;; View audit log
+M-x acp-permissions-view-audit-log
+
+;; Clear audit log
+M-x acp-permissions-clear-audit-log</code></pre>
+
+  <h2>Transcripts</h2>
+  <p>Every session automatically saves a Markdown transcript:</p>
+  <pre><code>;; Default location
+&lt;project&gt;/.acp/transcripts/YYYY-MM-DD-HH-MM-SS.md
+
+;; Contains:
+;; - Agent responses with syntax highlighting
+;; - Tool calls and results
+;; - User prompts
+;; - Timestamps</code></pre>
+
+  <h2>Viewport Panel</h2>
+  <p>Collapsible message blocks for long agent responses. Navigate with <kbd>TAB</kbd> and <kbd>S-TAB</kbd>.</p>
+
+  <h2>Diff Viewer</h2>
+  <p>When agents propose file edits, acp.el shows a side-by-side diff view with accept/reject options.</p>
+
+  <h2>Context Usage</h2>
+  <p>Real-time context window usage indicator in the modeline:</p>
+  <pre><code>;; Detailed: "29k/200k (15%)"
+;; Bar: █▇▆▅▄▃▂▁
+;; Color-coded: green → yellow → red</code></pre>
+
+  <h2>Git Worktree Support</h2>
+  <p>Create isolated git worktrees for agent sessions:</p>
+  <pre><code>;; Creates .acp/worktrees/&lt;random-name&gt;/
+;; Starts a fresh agent session in the worktree
+M-x acp-new-worktree-shell</code></pre>
+
+</div>
+
+<footer class="site-footer">
+  <p>Built with care by <a href="https://github.com/neopilot-ai">NeoPilot AI</a> and the Emacs community.</p>
+  <p><a href="https://github.com/neopilot-ai/acp.el/blob/main/LICENSE">GPL-3.0</a> · <a href="https://github.com/sponsors/neopilot-ai">Sponsor</a></p>
+</footer>
+
+</body>
+</html>
