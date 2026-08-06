@@ -3,6 +3,9 @@ name: GitHub Pages
 on:
   push:
     branches: [main, master]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -15,43 +18,45 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check if Pages is enabled
-        id: pages
+      - name: Validate HTML
         run: |
-          if [ -d "docs" ]; then
-            echo "docs_folder=exists" >> $GITHUB_OUTPUT
-          else
-            echo "docs_folder=missing" >> $GITHUB_OUTPUT
-          fi
+          for f in docs/*.html; do
+            echo "Checking: $f"
+            # Basic well-formedness check
+            if ! grep -q '</html>' "$f"; then
+              echo "ERROR: Missing closing </html> in $f"
+              exit 1
+            fi
+          done
+          echo "All HTML files validated"
+
+      - name: Check required files
+        run: |
+          test -f docs/index.html || { echo "ERROR: docs/index.html missing"; exit 1; }
+          test -f docs/style.css || { echo "ERROR: docs/style.css missing"; exit 1; }
+          echo "Required files present"
 
       - name: Setup Pages
-        if: steps.pages.outputs.docs_folder == 'exists'
         uses: actions/configure-pages@v4
-        continue-on-error: true
 
       - name: Upload artifact
-        if: steps.pages.outputs.docs_folder == 'exists'
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs'
-        continue-on-error: true
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
-        if: steps.pages.outputs.docs_folder == 'exists'
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
-
-      - name: Summary
-        run: |
-          if [ "${{ steps.pages.outputs.docs_folder }}" == "exists" ]; then
-            echo "✅ GitHub Pages deployment triggered"
-          else
-            echo "⚠️ No docs folder found - skipping Pages deployment"
-          fi

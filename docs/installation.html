@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Installation — acp.el</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="logo"><span>acp</span>.el</a>
+    <ul>
+      <li><a href="installation.html" class="active">Installation</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="agents.html">Agents</a></li>
+      <li><a href="features.html">Features</a></li>
+      <li><a href="contributing.html">Contributing</a></li>
+      <li><a href="https://github.com/neopilot-ai/acp.el">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Installation</h1>
+    <p>Get acp.el running in your Emacs in minutes.</p>
+  </div>
+
+  <h2>Requirements</h2>
+  <table>
+    <tr><th>Package</th><th>Version</th><th>Description</th></tr>
+    <tr><td>Emacs</td><td>29.1+</td><td>Core requirement</td></tr>
+    <tr><td>shell-maker</td><td>0.89.2+</td><td>Shell interface layer</td></tr>
+    <tr><td>acp</td><td>0.11.1+</td><td>ACP protocol client</td></tr>
+  </table>
+
+  <h2>Via MELPA (Recommended)</h2>
+  <p>The easiest way to install acp.el is through <a href="https://melpa.org">MELPA</a>.</p>
+
+  <h3>use-package</h3>
+  <pre><code>(use-package acp
+  :ensure t
+  :config
+  ;; Optional: set your preferred agent
+  (setq acp-preferred-agent-config
+        (acp-anthropic-make-claude-code-config)))</code></pre>
+
+  <h3>straight.el</h3>
+  <pre><code>(straight-use-package 'acp)</code></pre>
+
+  <h3>Manual (package.el)</h3>
+  <pre><code>M-x package-install RET acp RET</code></pre>
+
+  <h2>Manual Installation</h2>
+  <p>Clone the repository and add the directories to your <code>load-path</code>:</p>
+
+  <pre><code>git clone https://github.com/neopilot-ai/acp.el.git ~/acp.el</code></pre>
+
+  <p>Add to your Emacs config (<code>~/.emacs.d/init.el</code> or <code>~/.emacs</code>):</p>
+
+  <pre><code>(add-to-list 'load-path "~/acp.el/agents")
+(add-to-list 'load-path "~/acp.el/ui")
+(add-to-list 'load-path "~/acp.el/features")
+(add-to-list 'load-path "~/acp.el")
+(require 'acp)</code></pre>
+
+  <h2>Authentication</h2>
+  <p>Each agent requires authentication. Configure at least one agent to get started.</p>
+
+  <h3>Anthropic (Claude Code)</h3>
+  <pre><code>;; Option 1: API key
+(setq acp-anthropic-authentication
+      (acp-anthropic-make-authentication :api-key "sk-ant-..."))
+
+;; Option 2: Browser login
+(setq acp-anthropic-authentication
+      (acp-anthropic-make-authentication :login t))</code></pre>
+
+  <h3>Google (Gemini CLI)</h3>
+  <pre><code>;; Uses Application Default Credentials
+;; Run: gcloud auth application-default login
+(setq acp-google-authentication
+      (acp-google-make-authentication :login t))</code></pre>
+
+  <h3>OpenAI (Codex)</h3>
+  <pre><code>;; API key
+(setq acp-openai-authentication
+      (acp-openai-make-authentication :api-key "sk-..."))</code></pre>
+
+  <p>See the <a href="configuration.html">Configuration</a> page for detailed authentication options.</p>
+
+  <h2>Verify Installation</h2>
+  <p>After configuring, start Emacs and run:</p>
+  <pre><code>M-x acp</code></pre>
+  <p>You should see the agent selection prompt. Select an agent and start chatting.</p>
+
+  <h2>Troubleshooting</h2>
+
+  <h3>Agent binary not found</h3>
+  <p>Ensure the agent CLI is installed and on your <code>PATH</code>:</p>
+  <pre><code>;; Check if the binary exists
+(which claude)    ;; For Claude Code
+(which gemini)    ;; For Gemini CLI
+(which codex)     ;; For Codex</code></pre>
+
+  <h3>shell-maker version mismatch</h3>
+  <p>acp.el requires shell-maker 0.89.2+. Update via <code>M-x package-upgrade</code>.</p>
+
+</div>
+
+<footer class="site-footer">
+  <p>Built with care by <a href="https://github.com/neopilot-ai">NeoPilot AI</a> and the Emacs community.</p>
+  <p><a href="https://github.com/neopilot-ai/acp.el/blob/main/LICENSE">GPL-3.0</a> · <a href="https://github.com/sponsors/neopilot-ai">Sponsor</a></p>
+</footer>
+
+</body>
+</html>

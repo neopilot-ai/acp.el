@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supported Agents — acp.el</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="logo"><span>acp</span>.el</a>
+    <ul>
+      <li><a href="installation.html">Installation</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="agents.html" class="active">Agents</a></li>
+      <li><a href="features.html">Features</a></li>
+      <li><a href="contributing.html">Contributing</a></li>
+      <li><a href="https://github.com/neopilot-ai/acp.el">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Supported Agents</h1>
+    <p>acp.el works with 12+ AI agents through the Agent Client Protocol.</p>
+  </div>
+
+  <h2>Agent Matrix</h2>
+  <table>
+    <tr>
+      <th>Agent</th>
+      <th>Company</th>
+      <th>Files</th>
+      <th>Edit</th>
+      <th>Bash</th>
+      <th>Search</th>
+      <th>MCP</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td><strong>Claude Code</strong></td>
+      <td>Anthropic</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td><span class="badge badge-green">Stable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Gemini CLI</strong></td>
+      <td>Google</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td><span class="badge badge-green">Stable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Codex</strong></td>
+      <td>OpenAI</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-green">Stable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Goose</strong></td>
+      <td>Block</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td><span class="badge badge-green">Stable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Cursor</strong></td>
+      <td>Cursor</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Qwen Code</strong></td>
+      <td>Alibaba</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Mistral Vibe</strong></td>
+      <td>Mistral</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Kiro CLI</strong></td>
+      <td>Kiro</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Auggie</strong></td>
+      <td>Augment</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Factory Droid</strong></td>
+      <td>Factory</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td><span class="badge badge-blue">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>Pi</strong></td>
+      <td>Pi AI</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-orange">Beta</span></td>
+    </tr>
+    <tr>
+      <td><strong>OpenCode</strong></td>
+      <td>OpenCode</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>Yes</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-orange">Beta</span></td>
+    </tr>
+  </table>
+
+  <h2>Quick Start per Agent</h2>
+
+  <h3>Claude Code (Anthropic)</h3>
+  <pre><code>;; Requires: claude-agent-acp binary
+;; Install: npm install -g @anthropic-ai/claude-agent-acp
+
+;; Start directly
+M-x acp-anthropic-start-claude-code
+
+;; Or configure as default
+(setq acp-preferred-agent-config
+      (acp-anthropic-make-claude-code-config))</code></pre>
+
+  <h3>Gemini CLI (Google)</h3>
+  <pre><code>;; Requires: gemini CLI
+;; Install: https://github.com/google-gemini/gemini-cli
+
+;; Start directly
+M-x acp-google-start-gemini</code></pre>
+
+  <h3>Codex (OpenAI)</h3>
+  <pre><code>;; Requires: codex CLI
+;; Install: npm install -g @openai/codex
+
+;; Start directly
+M-x acp-openai-start-codex</code></pre>
+
+  <h3>Goose (Block)</h3>
+  <pre><code>;; Requires: goose CLI
+;; Install: https://block.github.io/goose/
+
+M-x acp-goose-start-goose</code></pre>
+
+  <h2>Adding a New Agent</h2>
+  <p>To add support for a new agent, create a file in <code>agents/</code>:</p>
+  <pre><code>;;; acp-myagent.el --- MyAgent support for acp -*- lexical-binding: t; -*-
+
+(require 'cl-lib)
+(require 'map)
+
+(declare-function acp-make-agent-config "acp")
+(declare-function acp--make-acp-client "acp")
+
+(defun acp-myagent-make-config ()
+  "Create an agent config for MyAgent."
+  (acp-make-agent-config
+   :identifier 'myagent
+   :mode-line-name "MyAgent"
+   :client-maker (lambda (buffer)
+                   (acp-myagent-make-client :buffer buffer))
+   :authentication-types '(:api-key)))
+
+(defun acp-myagent-make-client (&key buffer)
+  "Create a MyAgent ACP client for BUFFER."
+  (acp--make-acp-client
+   :command "myagent"
+   :command-args '("--acp")
+   :buffer buffer))
+
+(provide 'acp-myagent)</code></pre>
+  <p>Then register it in <code>acp.el</code>'s <code>acp--make-default-agent-configs</code>.</p>
+
+</div>
+
+<footer class="site-footer">
+  <p>Built with care by <a href="https://github.com/neopilot-ai">NeoPilot AI</a> and the Emacs community.</p>
+  <p><a href="https://github.com/neopilot-ai/acp.el/blob/main/LICENSE">GPL-3.0</a> · <a href="https://github.com/sponsors/neopilot-ai">Sponsor</a></p>
+</footer>
+
+</body>
+</html>

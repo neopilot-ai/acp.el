@@ -136,7 +136,6 @@ The user is prompted to confirm or edit the worktree path before creation."
       (unless (zerop exit-code)
         (user-error "Failed to create worktree: %s" git-output))
       (let ((default-directory worktree-path))
-        (acp '(4)))))
         (acp '(4))))))
 
 (provide 'acp-worktree)

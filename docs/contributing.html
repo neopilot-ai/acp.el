@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contributing — acp.el</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="logo"><span>acp</span>.el</a>
+    <ul>
+      <li><a href="installation.html">Installation</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="agents.html">Agents</a></li>
+      <li><a href="features.html">Features</a></li>
+      <li><a href="contributing.html" class="active">Contributing</a></li>
+      <li><a href="https://github.com/neopilot-ai/acp.el">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Contributing</h1>
+    <p>Help make acp.el better for the Emacs community.</p>
+  </div>
+
+  <h2>Getting Started</h2>
+
+  <h3>1. Clone the Repository</h3>
+  <pre><code>git clone https://github.com/neopilot-ai/acp.el.git
+cd acp.el</code></pre>
+
+  <h3>2. Add to load-path</h3>
+  <pre><code>(add-to-list 'load-path "/path/to/acp.el")
+(add-to-list 'load-path "/path/to/acp.el/agents")
+(add-to-list 'load-path "/path/to/acp.el/ui")
+(add-to-list 'load-path "/path/to/acp.el/features")</code></pre>
+
+  <h3>3. Run Tests</h3>
+  <pre><code># Load check
+make test
+
+# Run ERT tests
+make test-standalone
+
+# Byte-compile lint
+make lint
+
+# Clean compiled files
+make clean</code></pre>
+
+  <h2>Project Structure</h2>
+  <pre><code>acp.el/
+├── acp.el                  # Core session manager
+├── agents/                 # Agent adapters
+│   ├── acp-anthropic.el    # Claude Code
+│   ├── acp-google.el       # Gemini CLI
+│   ├── acp-openai.el       # Codex
+│   └── ...
+├── ui/                     # UI components
+│   ├── acp-viewport.el     # Collapsible message panel
+│   ├── acp-diff.el         # Diff viewer
+│   └── acp-styles.el       # Styling
+├── features/               # Optional features
+│   ├── acp-docker.el       # Docker support
+│   ├── acp-devcontainer.el # Devcontainer support
+│   ├── acp-github.el       # GitHub integration
+│   ├── acp-session-store.el # Session persistence
+│   ├── acp-permissions.el  # Permission manager
+│   ├── acp-file-tree.el    # File tree browser
+│   └── ...
+├── tests/                  # ERT tests
+├── docs/                   # Documentation site
+├── Makefile                # Build shortcuts
+└── README.md               # Project overview</code></pre>
+
+  <h2>Code Style</h2>
+
+  <h3>File Headers</h3>
+  <pre><code>;;; my-feature.el --- Description -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2024 NeoPilot AI
+
+;; Author: NeoPilot AI https://github.com/neopilot-ai
+;; URL: https://github.com/neopilot-ai/acp.el
+
+;; This package is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.</code></pre>
+
+  <h3>Naming Conventions</h3>
+  <table>
+    <tr><th>Pattern</th><th>Example</th><th>Usage</th></tr>
+    <tr><td><code>acp-NAME</code></td><td><code>acp-docker</code></td><td>Public entry point</td></tr>
+    <tr><td><code>acp--NAME</code></td><td><code>acp--state</code></td><td>Internal/private function or variable</td></tr>
+    <tr><td><code>acp-MODULE--NAME</code></td><td><code>acp-docker--container-id</code></td><td>Module-private function</td></tr>
+    <tr><td><code>acp-MODULE-NAME</code></td><td><code>acp-docker-start-container</code></td><td>Module public function</td></tr>
+    <tr><td><code>acp-MODULE-NAME</code></td><td><code>acp-docker-enabled</code></td><td>Customization variable</td></tr>
+  </table>
+
+  <h3>Feature Module Pattern</h3>
+  <pre><code>(eval-when-compile (require 'cl-lib))
+(require 'map)
+
+(declare-function acp--state "acp")
+(declare-function acp--dot-subdir "acp")
+
+(defgroup acp-my-feature nil
+  "My feature for acp."
+  :group 'acp)
+
+(defcustom acp-my-feature-option t
+  "Enable my feature."
+  :type 'boolean
+  :group 'acp-my-feature)
+
+(defun acp-my-feature--helper ()
+  "Internal helper function.")
+
+;;;###autoload
+(defun acp-my-feature-command ()
+  "Interactive command."
+  (interactive)
+  ...)
+
+(provide 'acp-my-feature)
+;;; acp-my-feature.el ends here</code></pre>
+
+  <h3>Test Pattern</h3>
+  <pre><code>(require 'ert)
+(require 'acp-my-feature)
+
+(ert-deftest acp-my-feature--helper/test-case ()
+  "Description of the test scenario."
+  (let ((result (acp-my-feature--helper)))
+    (should (equal result "expected"))))
+
+(ert-deftest acp-my-feature-command/error-case ()
+  "Test that an error is signaled."
+  (should-error (acp-my-feature-command)
+                :type 'error))</code></pre>
+
+  <h2>Adding a New Agent</h2>
+  <ol>
+    <li>Create <code>agents/acp-myagent.el</code></li>
+    <li>Implement <code>acp-myagent-make-config</code> function</li>
+    <li>Implement <code>acp-myagent-make-client</code> function</li>
+    <li>Add tests in <code>tests/acp-myagent-tests.el</code></li>
+    <li>Register in <code>acp--make-default-agent-configs</code> in <code>acp.el</code></li>
+    <li>Update <code>README.md</code> and <code>docs/agents.html</code></li>
+  </ol>
+
+  <h2>Adding a New Feature</h2>
+  <ol>
+    <li>Create <code>features/acp-myfeature.el</code></li>
+    <li>Follow the feature module pattern above</li>
+    <li>Add tests in <code>tests/acp-myfeature-tests.el</code></li>
+    <li>Add require in <code>acp.el</code>:
+      <pre><code>(require 'acp-myfeature "features/acp-myfeature")</code></pre>
+    </li>
+    <li>Update documentation</li>
+  </ol>
+
+  <h2>Pull Request Guidelines</h2>
+  <ul>
+    <li>Write your own PR descriptions — don't have AI generate them</li>
+    <li>Review all code in your PR and vouch for its quality</li>
+    <li>Run <code>make test</code> and <code>make lint</code> before submitting</li>
+    <li>Add tests for new functionality</li>
+    <li>Keep commits focused and messages concise</li>
+    <li>Follow existing code style and conventions</li>
+  </ul>
+
+  <h2>Reporting Issues</h2>
+  <p>When reporting bugs, please include:</p>
+  <ul>
+    <li>Emacs version (<code>M-x emacs-version</code>)</li>
+    <li>acp.el version</li>
+    <li>Agent being used</li>
+    <li>Steps to reproduce</li>
+    <li>Expected vs actual behavior</li>
+    <li>*Backtrace* if applicable (<code>M-x toggle-debug-on-error</code>)</li>
+  </ul>
+
+</div>
+
+<footer class="site-footer">
+  <p>Built with care by <a href="https://github.com/neopilot-ai">NeoPilot AI</a> and the Emacs community.</p>
+  <p><a href="https://github.com/neopilot-ai/acp.el/blob/main/LICENSE">GPL-3.0</a> · <a href="https://github.com/sponsors/neopilot-ai">Sponsor</a></p>
+</footer>
+
+</body>
+</html>
