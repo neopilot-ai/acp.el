@@ -128,7 +128,7 @@ Prefer inlining single-use expressions rather than binding them to intermediate 
 
 ** Move substantial functionality to separate files
 
-=acp.el= is getting large. When adding substantial new functionality, move helper functions to a dedicated file (e.g. =acp-completion.el=). You can keep the same =acp--= function name prefix. See [[https://github.com/neopilot-ai/acp.el/commit/c60203934d577e88d03035038a1e247bb1ce0ded][this commit]] for an example of this transition.
+=acp-shell.el= is getting large. When adding substantial new functionality, move helper functions to a dedicated file (e.g. =acp-completion.el=). You can keep the same =acp--= function name prefix. See [[https://github.com/neopilot-ai/acp.el/commit/c60203934d577e88d03035038a1e247bb1ce0ded][this commit]] for an example of this transition.
 
 ** Use =:kebab-case= keywords for internal state
 

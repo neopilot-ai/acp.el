@@ -1,10 +1,11 @@
-;;; acp.el --- An agent shell powered by ACP -*- lexical-binding: t; -*-
+;;; acp-shell.el --- An agent shell powered by ACP -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 NeoPilot AI
 
 ;; Author: NeoPilot AI https://neopilot-ai.com
 ;; URL: https://github.com/neopilot-ai/acp.el
 ;; Version: 0.1.1
+;; Package-Requires: ((emacs "29.1") (markdown-overlays "0.1") (shell-maker "0.50.5") (acp "0.1") (sui "0.1"))
 
 ;; This package is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -76,7 +77,8 @@ and AUTHENTICATE-REQUEST-MAKER."
         (cons :session-id nil)
         (cons :last-entry-type nil)
         (cons :request-count 0)
-        (cons :tool-calls nil)))
+        (cons :tool-calls nil)
+        (cons :pending-permission-timer nil)))
 
 (defvar-local acp--state
     (acp--make-state))
@@ -157,9 +159,9 @@ and AUTHENTICATE-REQUEST-MAKER."
   (unless (eq major-mode 'acp-mode)
     (user-error "Not in a shell"))
   (with-current-buffer (map-elt shell :buffer)
-    (map-put! acp--state :request-count
-              ;; TODO: Make public in shell-maker.
-              (shell-maker--current-request-id))
+    ;; Increment local request counter for unique IDs
+    (let ((current-count (or (map-elt acp--state :request-count) 0)))
+      (map-put! acp--state :request-count (1+ current-count)))
     (cond ((not (map-elt acp--state :client))
            (acp--update-dialog-block
             :shell shell
@@ -426,14 +428,17 @@ https://agentclientprotocol.com/protocol/schema#param-stop-reason"
                                     :client (map-elt state :client)
                                     :state state))
                            :expanded t)
-                          (run-at-time
-                           0.1 nil (lambda ()
-                                     (acp-send-response
-                                      :client (map-elt state :client)
-                                      :response (acp-make-session-request-permission-response
-                                                 :request-id .id
-                                                 :option-id (acp--prompt-for-permission .params.options)))
-                                     (sui-collapse-dialog-block-by-id (map-elt state :request-count) .params.toolCall.toolCallId)))
+                          ;; Store timer handle so inline buttons can cancel it
+                          (let ((timer (run-at-time
+                                        0.1 nil (lambda ()
+                                                  (acp-send-response
+                                                   :client (map-elt state :client)
+                                                   :response (acp-make-session-request-permission-response
+                                                              :request-id .id
+                                                              :option-id (acp--prompt-for-permission .params.options)))
+                                                  (sui-collapse-dialog-block-by-id (map-elt state :request-count) .params.toolCall.toolCallId)
+                                                  (map-put! state :pending-permission-timer nil)))))
+                            (map-put! state :pending-permission-timer timer))
                           (map-put! state :last-entry-type "session/request_permission"))
                          (t
                           (acp--update-dialog-block
@@ -535,6 +540,10 @@ https://agentclientprotocol.com/protocol/schema#param-stop-reason"
                                         :kind 'permission
                                         :action (lambda ()
                                                   (interactive)
+                                                  ;; Cancel pending timer to prevent duplicate response
+                                                  (when-let ((timer (map-elt state :pending-permission-timer)))
+                                                    (cancel-timer timer)
+                                                    (map-put! state :pending-permission-timer nil))
                                                   (acp-send-response
                                                    :client client
                                                    :response (acp-make-session-request-permission-response
@@ -805,10 +814,21 @@ by default."
   (setq acp-logging-enabled (not acp-logging-enabled))
   (message "Logging: %s" (if acp-logging-enabled "ON" "OFF")))
 
+(defun acp--reset-logs-impl ()
+  "Reset all log buffers (implementation)."
+  (when (get-buffer "*acp-log*")
+    (with-current-buffer "*acp-log*"
+      (let ((inhibit-read-only t))
+        (erase-buffer))))
+  (when (get-buffer "*acp error*")
+    (with-current-buffer "*acp error*"
+      (let ((inhibit-read-only t))
+        (erase-buffer)))))
+
 (defun acp-reset-logs ()
   "Reset all log buffers."
   (interactive)
-  (acp-reset-logs)
+  (acp--reset-logs-impl)
   (message "Logs reset"))
 
 (defun acp-google-key ()
@@ -835,6 +855,6 @@ by default."
         (t
          nil)))
 
-(provide 'acp)
+(provide 'acp-shell)
 
-;;; acp.el ends here
+;;; acp-shell.el ends here

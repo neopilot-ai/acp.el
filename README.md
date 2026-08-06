@@ -123,7 +123,7 @@
 (add-to-list 'load-path "/path/to/acp.el/agents")
 (add-to-list 'load-path "/path/to/acp.el/ui")
 (add-to-list 'load-path "/path/to/acp.el/features")
-(require 'acp)
+(require 'acp-shell)
 ```
 
 ### 📋 Requirements
@@ -195,7 +195,7 @@ M-x acp-google-start-gemini
 ### Basic Setup
 
 ```elisp
-(require 'acp)
+(require 'acp-shell)
 
 ;; Set preferred agent
 (setq acp-preferred-agent-config
