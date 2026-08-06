@@ -323,8 +323,8 @@ NO-NAVIGATION omits sui-navigatable property to exclude from navigation."
                   (overlay-put indicator-overlay 'sui-collapsed t))))))))))
 
 (defun sui-toggle-all-dialog-blocks ()
-  "Toggle all dialog blocks based on the state of the last block.
-If the last block is collapsed, expand all.  Otherwise, collapse all."
+  "Toggle all dialog blocks based on whether any block is currently collapsed.
+If any block is collapsed, expand all.  Otherwise, collapse all."
   (interactive)
   ;; First, check if ANY blocks are collapsed
   (let ((any-collapsed nil)
@@ -486,17 +486,18 @@ INDENT-STRING defaults to two spaces."
 (defun sui-add-action-to-text (text action &optional on-entered)
   "Add ACTION lambda to propertized TEXT and return modified text.
 ON-ENTERED is a function to call when the cursor enters the text."
-  (add-text-properties 0 (length text)
-                       `(keymap ,(sui-make-action-keymap action))
-                       text)
-  (when on-entered
-    (add-text-properties 0 (length text)
-                         (list 'cursor-sensor-functions
-                               (list (lambda (window old-pos sensor-action)
-                                       (when (eq sensor-action 'entered)
-                                         (funcall on-entered)))))
-                         text))
-  text)
+  (let ((text-copy (copy-sequence text)))
+    (add-text-properties 0 (length text-copy)
+                         `(keymap ,(sui-make-action-keymap action))
+                         text-copy)
+    (when on-entered
+      (add-text-properties 0 (length text-copy)
+                           (list 'cursor-sensor-functions
+                                 (list (lambda (window old-pos sensor-action)
+                                         (when (eq sensor-action 'entered)
+                                           (funcall on-entered)))))
+                           text-copy))
+    text-copy))
 
 (defvar sui-mode-map
   (let ((map (make-sparse-keymap)))
