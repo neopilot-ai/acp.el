@@ -1,9 +1,9 @@
-;;; acp-tests.el --- Tests for acp.el pure functions -*- lexical-binding: t; -*-
+;;; acp-tests.el --- Tests for acp-shell.el pure functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; ERT tests for the pure/side-effect-free functions in acp.el.
+;; ERT tests for the pure/side-effect-free functions in acp-shell.el.
 ;;
-;; Because acp.el depends on external packages (shell-maker, markdown-overlays,
+;; Because acp-shell.el depends on external packages (shell-maker, markdown-overlays,
 ;; and the acp protocol client library), we define minimal stubs for those
 ;; symbols before loading the file under test.
 
@@ -52,9 +52,9 @@
   (provide 'shell-maker))
 
 ;; -- acp protocol library stubs --
-;; The file does (require 'acp), which resolves to itself since the feature
-;; name matches.  We still need the protocol-client symbols to be defined
-;; so that the top-level forms in acp.el can be read without errors.
+;; The file does (require 'acp), which should resolve to an external acp protocol
+;; library.  We still need the protocol-client symbols to be defined
+;; so that the top-level forms in acp-shell.el can be read without errors.
 (defvar acp-logging-enabled nil)
 (unless (fboundp 'acp--log)
   (defun acp--log (_tag _fmt &rest _args) nil))
@@ -88,14 +88,14 @@
   (defun acp-shutdown (&rest _) nil))
 
 ;; Load the library under test.
-;; Add the test directory to load-path so that (require 'sui) inside acp.el resolves.
-;; Pre-register 'acp in `features' to prevent the circular (require 'acp) inside the
-;; file from trying to reload itself before (provide 'acp) is reached.
+;; Add the test directory to load-path so that (require 'sui) inside acp-shell.el resolves.
+;; Pre-register 'acp in `features' to prevent the (require 'acp) inside the
+;; file from trying to load a missing external acp protocol library during tests.
 (let* ((test-dir (file-name-directory (or load-file-name buffer-file-name)))
        (load-path (cons test-dir load-path)))
   (unless (featurep 'acp)
     (push 'acp features))
-  (load (expand-file-name "acp.el" test-dir) nil t))
+  (load (expand-file-name "acp-shell.el" test-dir) nil t))
 
 ;;; ─────────────────────────────────────────────────────────────────
 ;;; Tests for acp--make-state

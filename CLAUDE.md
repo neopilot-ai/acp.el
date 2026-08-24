@@ -9,7 +9,7 @@ After cloning, add subdirectories to your `load-path`:
 (add-to-list 'load-path "~/path/to/acp.el/ui")
 (add-to-list 'load-path "~/path/to/acp.el/features")
 (add-to-list 'load-path "~/path/to/acp.el")
-(require 'acp)
+(require 'acp-shell)
 ```
 
 Or use the Makefile:

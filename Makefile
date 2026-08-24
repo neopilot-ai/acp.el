@@ -8,11 +8,11 @@ install:
 	@echo "(add-to-list \"load-path\" \"$$(pwd)/ui\")"
 	@echo "(add-to-list \"load-path\" \"$$(pwd)/features\")"
 	@echo "(add-to-list \"load-path\" \"$$(pwd)\")"
-	@echo "(require 'acp)"
+	@echo "(require 'acp-shell)"
 
 test:
 	emacs --batch -L . -L agents -L ui -L features \
-		--eval "(progn (require 'cl-lib) (require 'map) (require 'json) (ignore-errors (require 'markdown-overlays)) (ignore-errors (require 'shell-maker)) (require 'acp) (message \"Load check completed\"))"
+		--eval "(progn (require 'cl-lib) (require 'map) (require 'json) (ignore-errors (require 'markdown-overlays)) (ignore-errors (require 'shell-maker)) (require 'acp-shell) (message \"Load check completed\"))"
 
 test-standalone:
 	emacs --batch -L . -L agents -L ui -L features -L tests \

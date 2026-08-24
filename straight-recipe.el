@@ -10,4 +10,4 @@
 ;; (add-to-list 'load-path "~/path/to/acp.el/agents")
 ;; (add-to-list 'load-path "~/path/to/acp.el/ui")
 ;; (add-to-list 'load-path "~/path/to/acp.el/features")
-;; (require 'acp)
+;; (require 'acp-shell)
